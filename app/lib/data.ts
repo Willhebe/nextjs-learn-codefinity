@@ -3,6 +3,7 @@ const { neon } = require('@neondatabase/serverless');
 
 import { unstable_noStore as noStore } from 'next/cache'; 
 import {
+  Seller
   SellerField,
   SellersTableType,
   InvoiceForm,
@@ -248,7 +249,7 @@ export async function fetchFilteredSellers(query: string) {
 		ORDER BY sellers.name ASC
 	  `;
 
-    const sellers = data.map((seller) => ({
+    const sellers = data.map((seller: Seller) => ({
       ...seller,
       total_awaiting: formatCurrency(seller.total_awaiting),
       total_fulfilled: formatCurrency(seller.total_fulfilled),
