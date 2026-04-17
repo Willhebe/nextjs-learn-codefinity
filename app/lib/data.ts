@@ -249,7 +249,7 @@ export async function fetchFilteredSellers(query: string) {
 		ORDER BY sellers.name ASC
 	  `;
 
-    const sellers = data.map((seller: Seller) => ({
+    const sellers = data.map((seller: any) => ({
       ...seller,
       total_awaiting: formatCurrency(seller.total_awaiting),
       total_fulfilled: formatCurrency(seller.total_fulfilled),
