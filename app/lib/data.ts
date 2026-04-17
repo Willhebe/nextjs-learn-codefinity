@@ -134,7 +134,7 @@ export async function fetchFilteredInvoices(
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
 
-    return invoices.rows;
+    return invoices;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoices.');
@@ -160,7 +160,7 @@ export async function fetchInvoicesPages(query: string) {
       invoices.status ILIKE ${`%${query}%`}
   `;
 
-    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
@@ -186,10 +186,10 @@ export async function fetchInvoiceById(id: string) {
       WHERE invoices.id = ${id};
     `;
 
-    const invoice = data.rows.map((invoice) => ({
+    const invoice = data.map((invoice) => ({
       ...invoice,
       // Convert amount from cents to dollars
-      amount: invoice.amount / 100,
+      amount: Number(invoice.amount) / 100,
     }));
 
     return invoice[0];
@@ -214,7 +214,7 @@ export async function fetchSellers() {
       ORDER BY name ASC
     `;
 
-    const sellers = data.rows;
+    const sellers = data;
     return sellers;
   } catch (err) {
     console.error('Database Error:', err);
@@ -248,7 +248,7 @@ export async function fetchFilteredSellers(query: string) {
 		ORDER BY sellers.name ASC
 	  `;
 
-    const sellers = data.rows.map((seller) => ({
+    const sellers = data.map((seller) => ({
       ...seller,
       total_awaiting: formatCurrency(seller.total_awaiting),
       total_fulfilled: formatCurrency(seller.total_fulfilled),
@@ -270,7 +270,7 @@ export async function getUser(email: string) {
   noStore();
   try {
     const user = await sql`SELECT * FROM users WHERE email=${email}`;
-    return user.rows[0] as User;
+    return user[0] as User;
   } catch (error) {
     console.error('Failed to fetch user:', error);
     throw new Error('Failed to fetch user.');
