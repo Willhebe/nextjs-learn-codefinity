@@ -1,4 +1,5 @@
-import { sql } from '@vercel/postgres';
+const { neon } = require('@neondatabase/serverless');
+import { unstable_noStore as noStore } from 'next/cache'; 
 import {
   SellerField,
   SellersTableType,
@@ -9,6 +10,7 @@ import {
   Income,
 } from './definitions';
 import { formatCurrency } from './utils';
+const sql = neon(process.env.DATABASE_URL!);
 
 /**
  * Fetches income data from the database.
@@ -17,11 +19,11 @@ import { formatCurrency } from './utils';
 export async function fetchIncome() {
   // Add noStore() here prevent the response from being cached.
   // This is equivalent to in fetch(..., {cache: 'no-store'}).
-
+  noStore();
   try {
     const data = await sql<Income>`SELECT * FROM income`;
 
-    return data.rows;
+    return data;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch income data.');
@@ -33,6 +35,7 @@ export async function fetchIncome() {
  * @returns {Promise<LatestInvoiceRaw[]>} A promise that resolves to an array of the latest invoices.
  */
 export async function fetchLatestInvoices() {
+  noStore();
   try {
     const data = await sql<LatestInvoiceRaw>`
       SELECT invoices.amount, sellers.name, sellers.image_url, sellers.email, invoices.id
@@ -41,7 +44,7 @@ export async function fetchLatestInvoices() {
       ORDER BY invoices.date DESC
       LIMIT 5`;
 
-    const latestInvoices = data.rows.map((invoice) => ({
+    const latestInvoices = data.map((invoice) => ({
       ...invoice,
       amount: formatCurrency(invoice.amount),
     }));
@@ -57,6 +60,7 @@ export async function fetchLatestInvoices() {
  * @returns {Promise<object>} A promise that resolves to an object containing card data.
  */
 export async function fetchCardData() {
+  noStore();
   try {
     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
     const sellerCountPromise = sql`SELECT COUNT(*) FROM sellers`;
@@ -71,13 +75,13 @@ export async function fetchCardData() {
       invoiceStatusPromise,
     ]);
 
-    const numberOfInvoices = Number(data[0].rows[0].count ?? '0');
-    const numberOfSellers = Number(data[1].rows[0].count ?? '0');
+    const numberOfInvoices = Number(data[0][0].count ?? '0');
+    const numberOfSellers = Number(data[1][0].count ?? '0');
     const totalFulfilledInvoices = formatCurrency(
-      data[2].rows[0].fulfilled ?? '0',
+      data[2][0].fulfilled ?? '0',
     );
     const totalAwaitingInvoices = formatCurrency(
-      data[2].rows[0].awaiting ?? '0',
+      data[2][0].awaiting ?? '0',
     );
 
     return {
@@ -103,6 +107,7 @@ export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
 ) {
+  noStore();
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
@@ -140,6 +145,7 @@ export async function fetchFilteredInvoices(
  * @returns {Promise<number>} A promise that resolves to the total number of pages.
  */
 export async function fetchInvoicesPages(query: string) {
+  noStore();
   try {
     const count = await sql`SELECT COUNT(*)
     FROM invoices
@@ -166,6 +172,7 @@ export async function fetchInvoicesPages(query: string) {
  * @returns {Promise<InvoiceForm>} A promise that resolves to the details of the specified invoice.
  */
 export async function fetchInvoiceById(id: string) {
+  noStore();
   try {
     const data = await sql<InvoiceForm>`
       SELECT
@@ -195,6 +202,7 @@ export async function fetchInvoiceById(id: string) {
  * @returns {Promise<SellerField[]>} A promise that resolves to an array of seller data.
  */
 export async function fetchSellers() {
+  noStore();
   try {
     const data = await sql<SellerField>`
       SELECT
@@ -218,6 +226,7 @@ export async function fetchSellers() {
  * @returns {Promise<FormattedSellersTable[]>} A promise that resolves to an array of formatted seller data.
  */
 export async function fetchFilteredSellers(query: string) {
+  noStore();
   try {
     const data = await sql<SellersTableType>`
 		SELECT
@@ -256,6 +265,7 @@ export async function fetchFilteredSellers(query: string) {
  * @returns {Promise<User>} A promise that resolves to the user details.
  */
 export async function getUser(email: string) {
+  noStore();
   try {
     const user = await sql`SELECT * FROM users WHERE email=${email}`;
     return user.rows[0] as User;

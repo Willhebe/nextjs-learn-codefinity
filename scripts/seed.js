@@ -1,17 +1,21 @@
-const { db } = require('@vercel/postgres');
+require('dotenv').config()
+const { neon } = require('@neondatabase/serverless');
+const bcrypt = require('bcrypt');
+
 const {
   invoices,
   sellers,
   income,
   users,
 } = require('../app/lib/placeholder-data.js');
-const bcrypt = require('bcrypt');
 
-async function seedUsers(client) {
+const sql = neon(process.env.DATABASE_URL);
+
+async function seedUsers() {
   try {
-    await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+    await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
     // Create the "users" table if it doesn't exist
-    const createTable = await client.sql`
+    const createTable = await sql`
       CREATE TABLE IF NOT EXISTS users (
         id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -26,7 +30,7 @@ async function seedUsers(client) {
     const insertedUsers = await Promise.all(
       users.map(async (user) => {
         const hashedPassword = await bcrypt.hash(user.password, 10);
-        return client.sql`
+        return sql`
         INSERT INTO users (id, name, email, password)
         VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
         ON CONFLICT (id) DO NOTHING;
@@ -46,12 +50,12 @@ async function seedUsers(client) {
   }
 }
 
-async function seedInvoices(client) {
+async function seedInvoices() {
   try {
-    await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+    await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
     // Create the "invoices" table if it doesn't exist
-    const createTable = await client.sql`
+    const createTable = await sql`
     CREATE TABLE IF NOT EXISTS invoices (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     seller_id UUID NOT NULL,
@@ -66,7 +70,7 @@ async function seedInvoices(client) {
     // Insert data into the "invoices" table
     const insertedInvoices = await Promise.all(
       invoices.map(
-        (invoice) => client.sql`
+        (invoice) => sql`
         INSERT INTO invoices (seller_id, amount, status, date)
         VALUES (${invoice.seller_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
         ON CONFLICT (id) DO NOTHING;
@@ -86,12 +90,12 @@ async function seedInvoices(client) {
   }
 }
 
-async function seedSellers(client) {
+async function seedSellers() {
   try {
-    await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+    await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
     // Create the "sellers" table if it doesn't exist
-    const createTable = await client.sql`
+    const createTable = await sql`
       CREATE TABLE IF NOT EXISTS sellers (
         id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -105,7 +109,7 @@ async function seedSellers(client) {
     // Insert data into the "sellers" table
     const insertedSellers = await Promise.all(
       sellers.map(
-        (seller) => client.sql`
+        (seller) => sql`
         INSERT INTO sellers (id, name, email, image_url)
         VALUES (${seller.id}, ${seller.name}, ${seller.email}, ${seller.image_url})
         ON CONFLICT (id) DO NOTHING;
@@ -125,10 +129,10 @@ async function seedSellers(client) {
   }
 }
 
-async function seedIncome(client) {
+async function seedIncome() {
   try {
     // Create the "income" table if it doesn't exist
-    const createTable = await client.sql`
+    const createTable = await sql`
       CREATE TABLE IF NOT EXISTS income (
         month VARCHAR(4) NOT NULL UNIQUE,
         income INT NOT NULL
@@ -140,7 +144,7 @@ async function seedIncome(client) {
     // Insert data into the "income" table
     const insertedIncome = await Promise.all(
       income.map(
-        (item) => client.sql`
+        (item) => sql`
         INSERT INTO income (month, income)
         VALUES (${item.month}, ${item.income})
         ON CONFLICT (month) DO NOTHING;
@@ -161,14 +165,14 @@ async function seedIncome(client) {
 }
 
 async function main() {
-  const client = await db.connect();
+  console.log('Starting database seeding with neon');
 
-  await seedUsers(client);
-  await seedSellers(client);
-  await seedInvoices(client);
-  await seedIncome(client);
+  await seedUsers();
+  await seedSellers();
+  await seedInvoices();
+  await seedIncome();
 
-  await client.end();
+  console.log('Seed successful!');
 }
 
 main().catch((err) => {

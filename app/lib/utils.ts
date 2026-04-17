@@ -38,10 +38,14 @@ export const formatDateToLocal = (
  * @returns {object} An object containing Y-axis labels and the top label.
  */
 export const generateYAxis = (income: Income[]) => {
+
+   if (!Array.isArray(income) || income.length === 0) {
+    return { yAxisLabels: [], topLabel: 0 }
+  }
   const yAxisLabels = [];
   const highestRecord = Math.max(...income.map((month) => month.income));
   const topLabel = Math.ceil(highestRecord / 1000) * 1000;
-
+  
   for (let i = topLabel; i >= 0; i -= 1000) {
     yAxisLabels.push(`$${i / 1000}K`);
   }
