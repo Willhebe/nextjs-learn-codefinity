@@ -1,4 +1,6 @@
 const { neon } = require('@neondatabase/serverless');
+
+
 import { unstable_noStore as noStore } from 'next/cache'; 
 import {
   SellerField,
@@ -38,7 +40,7 @@ export async function fetchLatestInvoices() {
   noStore();
   try {
     const data = await sql<LatestInvoiceRaw>`
-      SELECT invoices.amount, sellers.name, sellers.image_url, sellers.email, invoices.id
+      SELECT invoices.amount, invoices.status, invoices.date, sellers.name, sellers.image_url, sellers.email, invoices.id
       FROM invoices
       JOIN sellers ON invoices.seller_id = sellers.id
       ORDER BY invoices.date DESC
