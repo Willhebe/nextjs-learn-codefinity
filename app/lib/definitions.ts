@@ -30,11 +30,17 @@ export type LatestInvoice = {
   name: string;
   image_url: string;
   email: string;
-  amount: string;
+  amount: string | number;
 };
 
-export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
-  amount: number;
+export type LatestInvoiceRaw = {
+  id: string;
+  amount: number | string;   // can be string depending on how Neon returns it
+  status: string;
+  date: string;
+  name: string;
+  image_url: string;
+  email: string;
 };
 
 export type InvoicesTable = {
