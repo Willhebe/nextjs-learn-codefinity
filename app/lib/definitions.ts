@@ -35,7 +35,7 @@ export type LatestInvoice = {
 
 export type LatestInvoiceRaw = {
   id: string;
-  amount: number | string;   // can be string depending on how Neon returns it
+  amount: number   // neon can return as string
   status: string;
   date: string;
   name: string;
