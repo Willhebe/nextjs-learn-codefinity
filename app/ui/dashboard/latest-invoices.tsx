@@ -19,7 +19,7 @@ export default async function LatestInvoices() {
         {/* Attention! Uncomment this section when you reach this stage in the course. */}
 
         <div className="bg-neutral-00 px-6">
-          {latestInvoices.map((invoice: any, i) => {
+          {latestInvoices.map((invoice: any, i: any) => {
             return (
               <div
                 key={invoice.id}
