@@ -3,13 +3,12 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { poppins } from '@/app/ui/fonts';
 import { LatestInvoice } from '@/app/lib/definitions';
+import { fetchLatestInvoices } from '@/app/lib/data';
 
-export default async function LatestInvoices({
-  latestInvoices,
-}: {
-  latestInvoices: LatestInvoice[];
-}) {
+export default async function LatestInvoices() {
+   const latestInvoices = await fetchLatestInvoices();
   return (
+
     <div className="flex w-full flex-col md:col-span-4">
       <h2
         className={`${poppins.className} mb-4 text-xl text-white md:text-2xl`}
@@ -20,7 +19,7 @@ export default async function LatestInvoices({
         {/* Attention! Uncomment this section when you reach this stage in the course. */}
 
         <div className="bg-neutral-00 px-6">
-          {latestInvoices.map((invoice, i) => {
+          {latestInvoices.map((invoice: any, i) => {
             return (
               <div
                 key={invoice.id}
