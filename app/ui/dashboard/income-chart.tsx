@@ -34,7 +34,7 @@ const chartHeight = 350;
             ))}
           </div>
 
-          {income.map((month) => (
+          {income.map((month: any) => (
             <div key={month.month} className="flex flex-col items-center gap-2">
               <div
                 className="w-full rounded-md bg-sky-700"
