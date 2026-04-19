@@ -15,6 +15,11 @@ const links = [
     href: '/dashboard/database',
     icon: ClipboardDocumentListIcon,
   },
+  {
+    name: 'Invoices',
+    href: '/dashboard/invoices',
+    icon: ClipboardDocumentListIcon,
+  },
 ];
 
 export default function NavLinks() {
